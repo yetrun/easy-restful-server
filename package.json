@@ -1,0 +1,10 @@
+{
+  "name": "easy-restful-server",
+  "version": "0.0.1",
+  "description": "一个开箱即用的 Restful 服务器",
+  "main": "index.js",
+  "private": true,
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
