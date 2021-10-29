@@ -1,9 +1,10 @@
 const fs = require('fs')
 const path = require('path')
+const { orderBy, filter, matches, pick, omit } = require('lodash')
 
-const dataDir = path.resolve(__dirname, 'data')
+const dataDir = path.resolve(__dirname, '../data')
 
-async function readResources(collection, query = {}) {
+async function readResources(collection) {
   const resourceFile = path.resolve(dataDir, `${collection}.json`)
 
   return new Promise((resolve, reject) => {
@@ -14,9 +15,6 @@ async function readResources(collection, query = {}) {
             reject(err)
           } else {
             let resources = JSON.parse(text)
-            for (const [key, value] of Object.entries(query)) {
-              resources = resources.filter(resource => resource[key] == value)
-            }
             resolve(resources)
           }
         })
@@ -53,16 +51,22 @@ async function writeResources(collection, resources) {
   })
 }
 
-
 async function index(req, res, collection) {
-  let resources = await readResources(collection, req.query)
+  let resources = await readResources(collection)
+
+  // 将 URL 中的参数转化为可传递给 readResources 的参数
+  const query = parseQuery(req.query)
+  resources = queryResources(resources, query)
+
   res.send(resources)
 }
 
-async function find (req, res, collection, id) {
-  const resources = await readResources(collection, { id })
-  if (resources.length >= 1) {
-    res.send(resources[0])
+async function find(req, res, collection, id) {
+  const resources = await readResources(collection)
+  const resource = resources.find(r => r.id === id)
+
+  if (resource) {
+    res.send(resource)
   } else {
     res.status(404).end('Not found!')
   }
@@ -115,6 +119,28 @@ function restResource(req, res, next) {
   default:
     return next()
   }
+}
+
+function parseQuery(query) {
+  // 取出排序参数
+  let { orderBy, order } = pick(query, ['orderBy', 'order'])
+  orderBy = orderBy || 'id'
+  order = order || 'asc'
+
+  return {
+    filters: omit(query, ['orderBy', 'order']),
+    orders: [orderBy, order]
+  }
+}
+
+function queryResources(resources, { filters = {}, orders: [orderKey, order] } = {}) {
+  // 根据 filters 筛选资源
+  resources = filter(resources, matches(filters))
+
+  // 根据 order 排序资源
+  resources = orderBy(resources, orderKey, order)
+
+  return resources
 }
 
 module.exports = restResource
