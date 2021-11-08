@@ -2,10 +2,13 @@
   "name": "easy-restful-server",
   "version": "0.0.1",
   "description": "一个开箱即用的 Restful 服务器",
-  "main": "index.js",
+  "main": "easy-rest-server.js",
   "private": true,
+  "bin": {
+    "easy-rest-server": "easy-rest-server.js"
+  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node easy-rest-server.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",

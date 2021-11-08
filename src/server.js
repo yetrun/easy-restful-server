@@ -1,8 +1,8 @@
 const express = require('express')
+const morgan = require('morgan')
 const cors = require('cors')
 const bodyParser = require('body-parser')
-const restResource = require('./src/rest-resource')
-const morgan = require('morgan')
+const restResource = require('./rest-resource')
 
 const app = express()
 const port = process.argv.length > 2 ? parseInt(process.argv[2]) : 3000
@@ -17,6 +17,4 @@ app.get('/', (req, res) => {
 
 app.use(restResource)
 
-app.listen(port, () => {
-  console.log(`Restful app listening at http://localhost:${port}`)
-})
+module.exports = app
