@@ -3,9 +3,21 @@ const path = require('path')
 const { orderBy, filter, matches, pick, omit } = require('lodash')
 
 const dataDir = path.resolve(__dirname, '../data')
+const seedsDir = path.resolve(__dirname, '../seeds')
 
-async function readResources(collection) {
-  const resourceFile = path.resolve(dataDir, `${collection}.json`)
+async function readResources(collection, dir = [dataDir, seedsDir]) {
+  if (Array.isArray(dir)) {
+    for (const dirItem of dir) {
+      const data = await readResources(collection, dirItem)
+      if (data.length > 0) {
+        return data
+      }
+    }
+
+    return []
+  }
+
+  const resourceFile = path.resolve(dir, `${collection}.json`)
 
   return new Promise((resolve, reject) => {
     fs.exists(resourceFile, exists => {
