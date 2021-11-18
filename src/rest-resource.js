@@ -73,13 +73,12 @@ function restResource(req, res, next) {
 
 function parseQuery(query) {
   // 取出排序参数
-  let { orderBy, order } = pick(query, ['orderBy', 'order'])
-  orderBy = orderBy || 'id'
-  order = order || 'asc'
+  const orderByParam = query['orderBy'] || [ '["id","ASC"]' ]
+  const [, orderBy, order] = orderByParam[0].match(/\["(\w+)","(asc|desc|ASC|DESC)"\]/)
 
   return {
-    filters: omit(query, ['orderBy', 'order']),
-    orders: [orderBy, order]
+    filters: omit(query, ['orderBy']),
+    orders: [orderBy, order.toLowerCase()]
   }
 }
 
