@@ -5,11 +5,20 @@ const bodyParser = require('body-parser')
 const restResource = require('./rest-resource')
 
 const app = express()
-const port = process.argv.length > 2 ? parseInt(process.argv[2]) : 3000
 
-app.use(morgan('tiny'))
-app.use(cors())
 app.use(bodyParser.json())
+app.use(morgan(function (tokens, req, res) {
+  return [
+    tokens.method(req, res),
+    tokens.url(req, res),
+    tokens.status(req, res),
+    '-',
+    tokens['response-time'](req, res), 'ms',
+    '\n-', 'Request Query: ', JSON.stringify(req.query),
+    '\n-', 'Request Body: ', JSON.stringify(req.body),
+  ].join(' ')
+}))
+app.use(cors())
 
 app.get('/', (req, res) => {
   res.send('Restful app.')
