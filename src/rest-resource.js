@@ -13,7 +13,7 @@ async function index(req, res, collection) {
 
 async function find(req, res, collection, id) {
   const resources = await readResources(collection)
-  const resource = resources.find(r => r.id === id)
+  const resource = resources.find(r => r.id == id) // 数字或者字符串类型都匹配
 
   if (resource) {
     res.send(resource)
@@ -72,12 +72,22 @@ function restResource(req, res, next) {
 }
 
 function parseQuery(query) {
-  // 取出排序参数
+  // 取出排序参数（js-data 格式）
   const orderByParam = query['orderBy'] || [ '["id","ASC"]' ]
   const [, orderBy, order] = orderByParam[0].match(/\["(\w+)","(asc|desc|ASC|DESC)"\]/)
 
+  // 取出筛选参数（js-data 格式）
+  let whereParam = query['where'] || '{}'
+  whereParam = JSON.parse(whereParam)
+  const filters = Object.entries(whereParam).reduce((filters, [key, value]) => {
+    if ('==' in value) {
+      filters[key] = value['==']
+    }
+    return filters
+  }, {})
+
   return {
-    filters: omit(query, ['orderBy']),
+    filters,
     orders: [orderBy, order.toLowerCase()]
   }
 }
